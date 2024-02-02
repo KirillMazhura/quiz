@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formAnswers = document.querySelector('#formAnswers');
     const nextButton = document.querySelector('#next')
     const prevButton = document.querySelector('#prev')
+    const sendButton = document.querySelector('#send')
 
     const questions = [
         {
@@ -90,13 +91,14 @@ document.addEventListener('DOMContentLoaded', function() {
     })
 
     const playTest = () => {
+        const finalAnswers = [];
         let numberQuestion = 0;
         const renderAnswers = (index) => {
             questions[index].answers.forEach((answer)=> {
                 const answerItem = document.createElement('div');
                 answerItem.classList.add("answers-item", "d-flex", "flex-column");
                 answerItem.innerHTML=`
-                <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none">
+                <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none" value="${answer.title}">
                 <label for="${answer.title}" class="d-flex flex-column justify-content-between">
                   <img class="answerImg" src="${answer.url}" alt="burger">
                   <span>${answer.title}</span>
@@ -109,21 +111,56 @@ document.addEventListener('DOMContentLoaded', function() {
             formAnswers.innerHTML ='';
             questionTitle.textContent = `${questions[indexQuestion].question}`;
             renderAnswers(indexQuestion);
-            if(numberQuestion==0) {
-                prevButton.classList.add("d-none")
-            } else if(numberQuestion==questions.length-1){
-                nextButton.classList.add("d-none")
-            } else {
-                prevButton.classList.remove("d-none")
-                nextButton.classList.remove("d-none")
+            // if(numberQuestion==0) {
+            //     prevButton.classList.add("d-none")
+            // } else if(numberQuestion==questions.length-1){
+            //     nextButton.classList.add("d-none")
+            //     sendButton.classList.remove("d-none")
+            // } else if(numberQuestion==questions.length) {
+            //     prevButton.classList.add('d-none')
+            //     setTimeout(() => {
+            //         modalBlock.classList.remove("d-block")
+            //     }, 1000)
+            // } else {
+            //     prevButton.classList.remove("d-none")
+            //     nextButton.classList.remove("d-none")
+            //     sendButton.classList.add("d-none")
+            // } 
+            switch (true) {
+                case (numberQuestion===0):
+                    prevButton.classList.add("d-none");
+                    break;
+                case (numberQuestion===questions.length-1):
+                    nextButton.classList.add("d-none");
+                    sendButton.classList.remove("d-none");
+                    break;
+                case  (numberQuestion===questions.length):
+                    prevButton.classList.add('d-none');
+                    break;
+                case (numberQuestion>0 && numberQuestion<questions.length-1):
+                    prevButton.classList.remove("d-none");
+                    nextButton.classList.remove("d-none");
+                    sendButton.classList.add("d-none");
+                    break;
             }
         }
         renderQuestions(numberQuestion);
-        if(numberQuestion==2) {
-            prevButton.classList.remove("d-block")
-            console.log("hello")
+        const checkAnswer = () => {
+            const obj = {};
+            const inputs = [...formAnswers.elements].filter((input)=> input.checked || input.id === 'numberPhone')
+            inputs.forEach((input, index) => {
+                if(numberQuestion>=0 && numberQuestion<= questions.length-1) {
+                    obj[`${index}_${questions[numberQuestion].question}`]= input.value
+                } else if(numberQuestion=== questions.length) {
+                    obj['Номер телефона'] = input.value;
+                }
+                
+            })
+            finalAnswers.push(obj)
+            console.log(finalAnswers)
         }
         nextButton.onclick = () => {
+            checkAnswer();
             numberQuestion++
             renderQuestions(numberQuestion);
         }
@@ -131,6 +168,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if(numberQuestion)
             numberQuestion--
             renderQuestions(numberQuestion);
+        }
+        sendButton.onclick =() => {
+            checkAnswer();
+            numberQuestion++;
+            console.log(finalAnswers)
         }
     }
 })
